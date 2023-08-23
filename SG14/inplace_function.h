@@ -292,14 +292,18 @@ public:
 
     inplace_function& operator= (std::nullptr_t) noexcept
     {
-        vtable_ptr_->destructor_ptr(std::addressof(storage_));
+        if (vtable_ptr_) {
+            vtable_ptr_->destructor_ptr(std::addressof(storage_));
+        }
         vtable_ptr_ = std::addressof(inplace_function_detail::empty_vtable<R, Args...>);
         return *this;
     }
 
     inplace_function& operator= (inplace_function other) noexcept
     {
-        vtable_ptr_->destructor_ptr(std::addressof(storage_));
+        if (vtable_ptr_) {
+            vtable_ptr_->destructor_ptr(std::addressof(storage_));
+        }
 
         vtable_ptr_ = std::exchange(other.vtable_ptr_, std::addressof(inplace_function_detail::empty_vtable<R, Args...>));
         vtable_ptr_->relocate_ptr(
@@ -311,7 +315,9 @@ public:
 
     ~inplace_function()
     {
-        vtable_ptr_->destructor_ptr(std::addressof(storage_));
+        if (vtable_ptr_) {
+            vtable_ptr_->destructor_ptr(std::addressof(storage_));
+        }
     }
 
     R operator() (Args... args) const
